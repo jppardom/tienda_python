@@ -164,6 +164,7 @@ class Clientes:
 
     #Función para limpiar el formulario
     def limpiar (self):
+        
         self.txtCedula.delete(0, 'end')
         self.txtNombres.delete(0, 'end')
         self.txtApellidos.delete(0, 'end')
