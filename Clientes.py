@@ -99,26 +99,41 @@ class Clientes:
         self.frameDatos.config(font=('Comic Sans MS', 12))
         self.frameDatos.grid(column=0, row=4, padx=3, pady=3,columnspan=8)
 
+        #popup nenu
+        self.popup = Menu(self.ventanaClientes, tearoff=0)
+        self.popup.add_command(label="EDITAR", command=lambda:Clientes.editar(self))
+        self.popup.add_command(label="ELIMINAR")
+
+        def do_popup(event):
+            # display the popup menu
+            try:
+                self.popup.tk_popup(event.x_root, event.y_root, 0)
+            finally:
+                # make sure to release the grab (Tk 8.0a1 only)
+                self.popup.grab_release()
+
+
         #Tabla para cargar clintes 
         self.data = ttk.Treeview(self.frameDatos, height=10, columns=('id', 'cedula', 'nombres', 'apellidos', 'genero', 'direccion', 'correo', 'telefono'), show="headings")
         self.data.grid(column=0, row=4, padx=3, pady=3, columnspan=8)
         self.data.heading("id", text = 'ID', anchor = CENTER)
         self.data.column("id", width=40)
         self.data.heading("cedula", text = 'CÉDULA', anchor = CENTER)
-        self.data.column("cedula", width=60)
+        self.data.column("cedula", width=70)
         self.data.heading("nombres", text = 'NOMBRE', anchor = CENTER)
-        self.data.column("nombres", width=200)
+        self.data.column("nombres", width=150)
         self.data.heading("apellidos", text = 'APELLIDOS', anchor = CENTER)
-        self.data.column("apellidos", width=200)
+        self.data.column("apellidos", width=150)
         self.data.heading("genero", text = 'GENERO', anchor = CENTER)
-        self.data.column("genero", width=60)
+        self.data.column("genero", width=80)
         self.data.heading("direccion", text = 'DIRECCIÓN', anchor = CENTER)
         self.data.column("direccion", width=200)
         self.data.heading("correo", text = 'CORREO', anchor = CENTER)
         self.data.column("correo", width=200)
         self.data.heading("telefono", text = 'TELÉFONO', anchor = CENTER)
-        self.data.column("telefono", width=70)
-
+        self.data.column("telefono", width=80)
+        self.data.bind("<Button-3>", do_popup)
+        Clientes.cargar(self)
         Clientes.bloquear(self)
 
     #Función para bloquer widget
@@ -156,15 +171,25 @@ class Clientes:
            self.parametros = (self.txtCedula.get(), self.txtNombres.get(), self.txtApellidos.get(), self.cbxGenero.get(), self.txtDireccion.get(), self.txtCorreo.get(), self.txtTelefono.get())
            if Conexion.run_query(self.sql, self.parametros):
                messagebox.showinfo(message="Datos del cliente guardados con éxito", title='Cientes')
+               Clientes.cargar(self)
                Clientes.limpiar(self)
            else:
                messagebox.showerror(message='Los datos del cliente no se pueden guardar', title="cliente")
         else:
             messagebox.showwarning(message='El formularo posee campos obligatorios', title='Mensaje')
 
+    #Fución para cargar datos de clientes
+    def cargar (self):
+        self.limpiar_tabla = self.data.get_children()
+        for elemento in self.limpiar_tabla:
+            self.data.delete(elemento)
+        self.sql = "SELECT * FROM clientes"
+        self.lista_tabla = Conexion.run_query(self.sql)
+        for  row in self.lista_tabla:
+            self.data.insert('', row[0], values=(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]))
+
     #Función para limpiar el formulario
     def limpiar (self):
-        
         self.txtCedula.delete(0, 'end')
         self.txtNombres.delete(0, 'end')
         self.txtApellidos.delete(0, 'end')
@@ -174,4 +199,22 @@ class Clientes:
         self.txtTelefono.delete(0, 'end')
         self.txtCedula.focus()
         Clientes.bloquear(self)
+
+    #Funicion para desbloquear para actualizar datos 
+    def debloquer_actualizar(self):
+        self.txtCedula.config(state='normal')
+        self.txtNombres.config(state='normal')
+        self.txtApellidos.config(state='normal')
+        self.cbxGenero['state'] = 'normal'
+        self.txtDireccion.config(state='normal')
+        self.txtCorreo.config(state='normal')
+        self.txtTelefono.config(state='normal')
+        self.btnGuardar.config(state='disabled')
+        self.btnActualizar.config(state='normal')
+        self.btnCancelar.config(state='normal')
+        self.btnNuevo.config(state='disabled')
+
+    #Función para cargar los datos a los widget
+    def editar (self):
+        Clientes.debloquer_actualizar(self)
 
