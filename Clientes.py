@@ -86,11 +86,11 @@ class Clientes:
         self.btnGuardar.config(font=('Comic Sans MS', 12))
         self.btnGuardar.grid(column=4,row=1, padx=3, pady=3, sticky=N+S+W+E)
 
-        self.btnActualizar = Button(self.frameBotones, text="Actualizar")
+        self.btnActualizar = Button(self.frameBotones, text="Actualizar", command=lambda:Clientes.actualizar(self))
         self.btnActualizar.config(font=('Comic Sans MS', 12))
         self.btnActualizar.grid(column=4,row=2, padx=3, pady=3, sticky=N+S+W+E)
 
-        self.btnCancelar = Button(self.frameBotones, text="Cancelar", command=lambda:Clientes.bloquear(self))
+        self.btnCancelar = Button(self.frameBotones, text="Cancelar", command=lambda:Clientes.limpiar(self))
         self.btnCancelar.config(font=('Comic Sans MS', 12))
         self.btnCancelar.grid(column=4,row=3, padx=3, pady=3, sticky=N+S+W+E)
 
@@ -102,7 +102,7 @@ class Clientes:
         #popup nenu
         self.popup = Menu(self.ventanaClientes, tearoff=0)
         self.popup.add_command(label="EDITAR", command=lambda:Clientes.editar(self))
-        self.popup.add_command(label="ELIMINAR")
+        self.popup.add_command(label="ELIMINAR", command=lambda:Clientes.eliminar(self))
 
         def do_popup(event):
             # display the popup menu
@@ -133,8 +133,9 @@ class Clientes:
         self.data.heading("telefono", text = 'TELÉFONO', anchor = CENTER)
         self.data.column("telefono", width=80)
         self.data.bind("<Button-3>", do_popup)
+        self.cod_cliente = 0
         Clientes.cargar(self)
-        Clientes.bloquear(self)
+        Clientes.limpiar(self)
 
     #Función para bloquer widget
     def bloquear(self):
@@ -216,5 +217,50 @@ class Clientes:
 
     #Función para cargar los datos a los widget
     def editar (self):
+        try:
+            self.cod_cliente = self.data.item(self.data.selection())['values'][0]
+        except IndexError as e:
+            messagebox.showwarning(message="Se debe seleccionar una fila de la tabla", title="Seleccione una fila")
+            return
         Clientes.debloquer_actualizar(self)
+        self.cod_cliente = self.data.item(self.data.selection())['values'][0]
+        self.txtCedula.insert(0, self.data.item(self.data.selection())['values'][1])
+        self.txtCedula.config(state="disable")
+        self.txtNombres.insert(0, self.data.item(self.data.selection())['values'][2])
+        self.txtApellidos.insert(0, self.data.item(self.data.selection())['values'][3])
+        self.cbxGenero.insert(0, self.data.item(self.data.selection())['values'][4])
+        self.txtDireccion.insert(0, self.data.item(self.data.selection())['values'][5])
+        self.txtCorreo.insert(0, self.data.item(self.data.selection())['values'][6])
+        self.txtTelefono.insert(0, self.data.item(self.data.selection())['values'][7])
+        
+    #Función para actulizar los datos
+    def actualizar (self):
+        self.sql = "UPDATE clientes SET nombres=?, apellidos=?, genero=?, direccion=?, correo=?, telefono=? WHERE id=?"
+        self.parametros = (self.txtNombres.get(), self.txtApellidos.get(), self.cbxGenero.get(), self.txtDireccion.get(), self.txtCorreo.get(), self.txtTelefono.get(), self.cod_cliente)
+        if Conexion.run_query(self.sql, self.parametros):
+            messagebox.showinfo(message="Datos actualizado correctamente", title="Actulizar Datos")
+            self.txtCedula.config(state="normal")
+            Clientes.cargar(self)
+            Clientes.limpiar(self)
+        else:
+            messagebox.showwarning(message="Los datos no puede ser actualizados", title="Actualizar Datos")
+
+    #Función para eliminar los datos
+    def eliminar (self):
+        try:
+            self.cod_cliente = self.data.item(self.data.selection())['values'][0]
+        except IndexError as e:
+            messagebox.showwarning(message="Se debe seleccionar una fila de la tabla", title="Seleccione una fila")
+            return
+        self.cod_cliente = self.data.item(self.data.selection())['values'][0]
+        self.sql = "DELETE FROM clientes WHERE id=?"
+        self.parametros = (self.cod_cliente,) 
+        if Conexion.run_query(self.sql, self.parametros):
+            messagebox.showinfo(message="Datos eliminados correctamente", title="Eliminar datos")
+            Clientes.cargar(self)
+            Clientes.limpiar(self)
+        else:
+            messagebox.showinfo(message="Los datos no puedes ser eliminados", title= "Eliminiar datos")
+            Clientes.limpiar(self)
+
 

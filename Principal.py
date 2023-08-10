@@ -1,5 +1,6 @@
 from tkinter import *
 from Clientes import Clientes
+from Productos import Productos
 
 class Principal:
     def __init__(self):
@@ -17,8 +18,10 @@ class Principal:
         
         self.menuAdministracion = Menu (self.barraMenu, tearoff=0)
         self.menuAdministracion.add_command(label='Clientes', command=lambda:Clientes.__init__(self,self.ventanaPrincipal))
+        self.menuAdministracion.add_command(label='Producotos', command=lambda:Productos.__init__(self,self.ventanaPrincipal))
 
         self.barraMenu.add_cascade(label="Archivo", menu=self.menuAchivo)
         self.barraMenu.add_cascade(label='Adminstación', menu=self.menuAdministracion)
+        
 
         
