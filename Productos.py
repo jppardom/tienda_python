@@ -49,7 +49,7 @@ class Productos:
         self.btnNuevo.config(font=('Comic Sans MS', 12))
         self.btnNuevo.grid(column=4,row=0, padx=3, pady=3, sticky=N+S+W+E)
 
-        self.btnGuardar = Button(self.frameBotones, text="Guardar")
+        self.btnGuardar = Button(self.frameBotones, text="Guardar", command=lambda:Productos.guardar(self))
         self.btnGuardar.config(font=('Comic Sans MS', 12))
         self.btnGuardar.grid(column=4,row=1, padx=3, pady=3, sticky=N+S+W+E)
 
@@ -123,3 +123,17 @@ class Productos:
         self.txtStock.delete(0, 'end')
         self.txtNombre.focus()
         Productos.bloquear(self)
+
+    #Función para guardar datos de clientes
+    def guardar (self):
+        if  self.txtNombre.get()!="" and self.txtPrecio.get()!="" and self.txtStock.get()!="":
+           self.sql = 'INSERT INTO productos (nombre, precio, stock) VALUES (?,?,?)'
+           self.parametros = (self.txtNombre.get(), self.txtPrecio.get(), self.txtStock.get())
+           if Conexion.run_query(self.sql, self.parametros):
+               messagebox.showinfo(message="Datos del productos guardados con éxito", title='Cientes')
+               #Productos.cargar(self)
+               Productos.limpiar(self)
+           else:
+               messagebox.showerror(message='Los datos del productos no se pueden guardar', title="cliente")
+        else:
+            messagebox.showwarning(message='El formularo posee campos obligatorios', title='Mensaje')
